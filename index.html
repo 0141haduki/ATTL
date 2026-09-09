@@ -1,0 +1,71 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ATTL</title><link rel="stylesheet" href="styles.css"></head><body>
+<header><div><h1>ATTL</h1><p>Accomplish To The Last — PLAN / DO / CHECK / ADJUST</p></div><button id="todayBtn">今日</button></header>
+<nav class="mainNav">
+  <button data-view="week" class="active">ATTL</button>
+  <button data-view="check">CHECK</button>
+  <button data-view="adjust">ADJUST</button>
+  <button data-view="settings" class="gearBtn" aria-label="設定">⚙</button>
+</nav>
+<div id="jsError" hidden style="margin:10px 24px;padding:10px 12px;border:1px solid #b54646;border-radius:8px;background:#fff0f0;color:#8b2424;font-weight:600;"></div>
+  <main>
+<section id="week" class="view active">
+<div class="versionBadge">ATTL v0.8.1 — 復習設計アップデート</div>
+<div class="attlModeBar">
+  <button id="openTodayEdit" class="primary">今日を編集</button>
+  <button id="openWorkSettings">勤務予定</button>
+  <span class="muted">未来はPLAN中心 / 過去はDO中心</span>
+</div>
+<div class="reviewPolicyCard">
+  <strong>復習：固定日ノルマではなく「時間予算 × 検索練習」</strong>
+  <span>1・3・7・14・28日の未消化タスクを積み上げません。PLAN/DOの各学習ブロックを「通常 / 復習」に分類します。</span>
+</div>
+<div class="weekTopBar"><div><h2 id="weekTitle">今日を含む7日間</h2><p id="weekSubtitle" class="muted">今日から7日先まで。日付を押すと編集できます。</p></div>
+<div class="weekControls"><button id="rollingWeekBtn" class="activeMode">今後7日</button><button id="calendarWeekBtn">週参照（月〜日）</button><button id="prevWeekBtn" class="hidden">← 前週</button><button id="currentWeekBtn" class="hidden">今週</button><button id="nextWeekBtn" class="hidden">次週 →</button></div></div>
+<div class="weekScroll">
+<div class="weekStickyHeader"><div class="weekHeaderLabel">時間</div><div id="weekHours" class="weekHours"></div></div>
+<div id="weekBoard" class="week-board"></div>
+</div>
+</section>
+<section id="day" class="view"><div class="toolbar"><label>日付<input type="date" id="dayDate"></label><button id="backWeek">7日間へ戻る</button><button id="copyYesterday">昨日の予定をコピー</button><button id="addActual">＋予定外実績</button></div><div class="summary"><div>計画学習<strong id="planMin">0分</strong></div><div>実績学習<strong id="actualMin">0分</strong></div><div>達成率<strong id="rate">—</strong></div></div>
+<div class="panel diffPanel"><h2>PLAN / DO 差分</h2><div id="diffSummary" class="diffSummary"></div><div id="diffSubjects" class="diffSubjects"></div><div id="diffNotes" class="diffNotes"></div></div>
+<div class="panel"><h2>学習予定</h2><p class="muted">空いている時間を横にスライド（30分単位）→科目記号を選択。ブロック長押しで移動、左右端をドラッグで伸縮。</p><div class="hours" id="planHours"></div><div class="track" id="planTrack"><div id="selection" class="selection hidden"></div></div><div id="subjectPicker" class="picker hidden"></div><div id="typePicker" class="picker hidden"><button data-type="theory">理論</button><button data-type="calc">計算</button></div>
+<div class="detailListWrap"><h3>予定詳細</h3><div id="planDetailList" class="detailList"></div></div></div>
+<div class="panel"><h2>学習実績</h2><p class="muted">予定終了時刻を過ぎると未移行の予定を自動実績化。予定詳細から「実績へ移行」もできます。予定外実績は上のボタンから追加できます。実績は1分単位で編集できます。</p><div class="hours" id="actualHours"></div><div class="track actual" id="actualTrack"></div><div class="detailListWrap"><h3>実績詳細</h3><div id="actualDetailList" class="detailList"></div></div></div>
+<div class="panel"><h2>復習</h2><p class="muted">固定日の復習ノルマは作らず、復習に使った時間だけ記録します。未実施分は翌日に繰り越しません。</p><div id="reviewSummary" class="diffSummary"></div><button id="copyReviewGPT">GPT復習用テキストをコピー</button></div><div class="panel"><h2>CHECK / ADJUST</h2><p class="muted">必要な日だけ、未達の主因をタップ。複数選択できます。</p><div id="reasonButtons" class="reasonButtons"></div><div class="notes"><label>今日のメモ（任意）<textarea id="note" rows="3"></textarea></label><label>明日の調整（任意）<textarea id="adjust" rows="3"></textarea></label></div></div></section>
+
+<section id="check" class="view">
+  <div class="pageIntro"><h2>CHECK</h2><p class="muted">事実を確認し、次のADJUSTにつながるボトルネックを探します。</p></div>
+  <div class="summary checkSummary">
+    <div>直近7日 PLAN<strong id="checkPlan7">0.0h</strong></div>
+    <div>直近7日 DO<strong id="checkActual7">0.0h</strong></div>
+    <div>復習 DO<strong id="checkReview7">0.0h</strong></div>
+    <div>復習比率<strong id="checkReviewRatio7">0%</strong></div>
+  </div>
+  <div class="panel">
+    <h2>復習の見方</h2>
+    <p>復習件数の消化率ではなく、限られた復習時間の中で検索練習・再演習ができたかを見ます。未実施分は「復習借金」にしません。</p>
+    <button id="copyWeeklyGPT">直近7日をGPT分析用にコピー</button>
+  </div>
+</section>
+<section id="adjust" class="view">
+  <div class="pageIntro"><h2>ADJUST</h2><p class="muted">CHECKで見つけた問題から、次週のPLANルールを1〜3個だけ決めます。</p></div>
+  <div class="panel">
+    <label>次週に採用する調整<textarea id="weeklyAdjust" rows="6" placeholder="例：企業法の復習を週3回・各20分だけ確保する。未消化分は繰り越さない。"></textarea></label>
+    <button id="saveWeeklyAdjust" class="primary">保存</button>
+    <p id="weeklyAdjustSaved" class="muted"></p>
+  </div>
+</section>
+<section id="work" class="view"><div class="toolbar"><label>月<input type="month" id="workMonth"></label><button id="clearSelected">選択解除</button><button id="clearWorkSelected" class="danger">選択日の勤務を空にする</button></div><div class="two"><div class="panel"><h2>勤務日を複数選択</h2><div id="calendar" class="calendar"></div></div><div class="panel"><h2>勤務セット</h2><div id="presetList"></div><details><summary>＋勤務セットを作る</summary><div class="form"><label>名前<input id="presetName" placeholder="都町 夜勤"></label><label>勤務場所<input id="workPlace" placeholder="都町"></label><label>開始<input type="time" id="workStart" value="21:00"></label><label>終了<input type="time" id="workEnd" value="08:00"></label><label>往路（分）<input type="number" id="outMin" value="60"></label><label>復路（分）<input type="number" id="backMin" value="60"></label><label>交通手段<select id="transport"><option>B</option><option>R</option><option>W</option><option selected>P</option></select></label></div><button id="savePreset">保存</button></details></div></div></section>
+<section id="settings" class="view">
+<div class="pageIntro"><h2>設定</h2><p class="muted">毎日触る必要のない設定をここに集約します。</p></div>
+<div class="settingsHub">
+  <button id="settingsSleepJump">睡眠</button>
+  <button id="settingsWorkOpen">勤務</button>
+  <button id="settingsSubjectsJump">科目・教材</button>
+  <button disabled>試験・申込日（次版）</button>
+  <button disabled>データ（次版）</button>
+</div>
+<div class="two"><div class="panel"><h2>基本睡眠予定</h2><div class="form"><label>開始<input type="time" id="sleepStart"></label><label>終了<input type="time" id="sleepEnd"></label></div><button id="saveSleep">保存</button></div><div class="panel"><h2>学習科目設定</h2><p class="muted">理論・計算をONにした科目だけ、予定作成時に区分選択を表示します。</p><div id="subjectSettings"></div><button id="addSubject">＋科目追加</button></div></div></section>
+</main>
+<dialog id="editDialog"><div class="dialogHead"><h2 id="dialogTitle">詳細</h2><button id="closeDialog">×</button></div><input type="hidden" id="editMode"><input type="hidden" id="editId"><div class="form"><label>科目<select id="editSubject"></select></label><label>区分<select id="editType"><option value="theory">理論</option><option value="calc">計算</option></select></label><label>学習種別<select id="editStudyKind"><option value="normal">通常学習</option><option value="review">復習</option></select></label><label>開始<input type="time" step="60" id="editStart"></label><label>終了<input type="time" step="60" id="editEnd"></label><label>教材<input id="editMaterial" list="materialSuggestions" placeholder="一問一答"><datalist id="materialSuggestions"></datalist></label><label>場所<select id="editPlace"><option value="home">自宅</option><option value="outside">自宅外</option></select></label><label class="wide">勉強内容<input id="editDetail" placeholder="I25〜50 / R1-2"></label></div><div class="actions"><button id="deleteBlock" class="danger">削除</button><button id="duplicatePlan">複製</button><span></span><button id="migrateBtn">実績へ移行</button><button id="saveEdit" class="primary">変更を保存</button></div></dialog>
+<script src="app.js"></script></body></html>
